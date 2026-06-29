@@ -30,6 +30,37 @@
     <meta name="twitter:image" content="./logo.jpg" />
     <link rel="icon" type="image/x-icon" href="./favicon.ico" />
     <link rel="apple-touch-icon" href="./logo.jpg" />
+    <script>
+      (function () {
+        var repoBase = window.location.pathname.replace(/[^/]*$/, "");
+        function fixAssetUrl(url) {
+          if (typeof url !== "string" || !url.startsWith("/assets/")) {
+            return url;
+          }
+          return repoBase + url.slice(1);
+        }
+
+        var originalSetAttribute = Element.prototype.setAttribute;
+        Element.prototype.setAttribute = function (name, value) {
+          if ((name === "src" || name === "href") && typeof value === "string") {
+            value = fixAssetUrl(value);
+          }
+          return originalSetAttribute.call(this, name, value);
+        };
+
+        var srcDescriptor = Object.getOwnPropertyDescriptor(HTMLImageElement.prototype, "src");
+        if (srcDescriptor && srcDescriptor.set) {
+          Object.defineProperty(HTMLImageElement.prototype, "src", {
+            configurable: true,
+            enumerable: srcDescriptor.enumerable,
+            get: srcDescriptor.get,
+            set: function (value) {
+              srcDescriptor.set.call(this, fixAssetUrl(value));
+            },
+          });
+        }
+      })();
+    </script>
     <script type="module" crossorigin src="./assets/index-B9hukViv.js"></script>
     <link rel="stylesheet" crossorigin href="./assets/index-ClGV4-g1.css">
   </head>
